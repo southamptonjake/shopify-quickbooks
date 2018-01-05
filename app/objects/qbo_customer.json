@@ -1,0 +1,53 @@
+{
+  "QueryResponse": {
+    "Customer": [
+      {
+        "Taxable": false,
+        "BillAddr": {
+          "Id": "122",
+          "Line1": "Name LastName",
+          "Line2": "Rua Exemplo, 23 Ap 222",
+          "Line3": "Vila Romana",
+          "City": "São Paulo",
+          "Country": "Brazil",
+          "CountrySubDivisionCode": "SP",
+          "PostalCode": "00000-070"
+        },
+        "ShipAddr": {
+          "Id": "123",
+          "Line1": "Name",
+          "Line2": "Rua Exemplo, 23 Ap 222",
+          "Line3": "Vila Romana",
+          "City": "São Paulo",
+          "Country": "Brazil",
+          "CountrySubDivisionCode": "SP",
+          "PostalCode": "00000-070"
+        },
+        "Job": false,
+        "BillWithParent": false,
+        "Balance": 0,
+        "BalanceWithJobs": 0,
+        "CurrencyRef": {
+          "value": "BRL",
+          "name": "Brazilian Real"
+        },
+        "PreferredDeliveryMethod": "None",
+        "domain": "QBO",
+        "sparse": false,
+        "Id": "103",
+        "SyncToken": "0",
+        "MetaData": {
+          "CreateTime": "2017-12-14T17:18:17-08:00",
+          "LastUpdatedTime": "2017-12-14T17:18:17-08:00"
+        },
+        "GivenName": "John",
+        "FamilyName": "Bill",
+        "FullyQualifiedName": "John Bill",
+        "DisplayName": "John Bill",
+        "PrintOnCheckName": "John Bill",
+        "Active": true,
+        "PrimaryEmailAddr": {
+          "Address": "john@bill.com"
+        }
+      },
+      

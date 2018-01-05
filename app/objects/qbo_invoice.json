@@ -1,0 +1,148 @@
+// Business Rules
+// An invoice must have at least one Line for either a sales item or an inline subtotal.
+// An invoice must have CustomerRef populated.
+// The DocNumber attribute is populated automatically by the data service if not supplied.
+// If ShipAddr, BillAddr, or both are not provided, the appropriate customer address from the referenced
+// Customer object is used to fill those values.
+// If you have a large number of invoice and corresponding payment records that you wish to import to the
+// QuickBooks Online company, sort the invoice and payment records in chronological order and use the batch
+// resource to send invoice and payments batches of 25, one after the other, to ensure any open invoices get
+// credited with their payments.
+
+{
+    "Invoice": {
+        "Deposit": 0,
+        "domain": "QBO",
+        "sparse": false,
+        "Id": "130",
+        "SyncToken": "0",
+        "MetaData": {
+            "CreateTime": "2014-09-19T13:16:17-07:00",
+            "LastUpdatedTime": "2014-09-19T13:16:17-07:00"
+        },
+        "CustomField": [{
+            "DefinitionId": "1",
+            "Name": "Crew #",
+            "Type": "StringType",
+            "StringValue": "102"
+        }],
+        "DocNumber": "1037",
+        "TxnDate": "2014-09-19",
+        "LinkedTxn": [{
+            "TxnId": "100",
+            "TxnType": "Estimate"
+        }],
+        "Line": [{
+            "Id": "1",
+            "LineNum": 1,
+            "Description": "Rock Fountain",
+            "Amount": 275.0,
+            "DetailType": "SalesItemLineDetail",
+            "SalesItemLineDetail": {
+                "ItemRef": {
+                    "value": "5",
+                    "name": "Rock Fountain"
+                },
+                "UnitPrice": 275,
+                "Qty": 1,
+                "TaxCodeRef": {
+                    "value": "TAX"
+                }
+            }
+        }, {
+            "Id": "2",
+            "LineNum": 2,
+            "Description": "Fountain Pump",
+            "Amount": 12.75,
+            "DetailType": "SalesItemLineDetail",
+            "SalesItemLineDetail": {
+                "ItemRef": {
+                    "value": "11",
+                    "name": "Pump"
+                },
+                "UnitPrice": 12.75,
+                "Qty": 1,
+                "TaxCodeRef": {
+                    "value": "TAX"
+                }
+            }
+        }, {
+            "Id": "3",
+            "LineNum": 3,
+            "Description": "Concrete for fountain installation",
+            "Amount": 47.5,
+            "DetailType": "SalesItemLineDetail",
+            "SalesItemLineDetail": {
+                "ItemRef": {
+                    "value": "3",
+                    "name": "Concrete"
+                },
+                "UnitPrice": 9.5,
+                "Qty": 5,
+                "TaxCodeRef": {
+                    "value": "TAX"
+                }
+            }
+        }, {
+            "Amount": 335.25,
+            "DetailType": "SubTotalLineDetail",
+            "SubTotalLineDetail": {}
+        }],
+        "TxnTaxDetail": {
+            "TxnTaxCodeRef": {
+                "value": "2"
+            },
+            "TotalTax": 26.82,
+            "TaxLine": [{
+                "Amount": 26.82,
+                "DetailType": "TaxLineDetail",
+                "TaxLineDetail": {
+                    "TaxRateRef": {
+                        "value": "3"
+                    },
+                    "PercentBased": true,
+                    "TaxPercent": 8,
+                    "NetAmountTaxable": 335.25
+                }
+            }]
+        },
+        "CustomerRef": {
+            "value": "24",
+            "name": "Sonnenschein Family Store"
+        },
+        "CustomerMemo": {
+            "value": "Thank you for your business and have a great day!"
+        },
+        "BillAddr": {
+            "Id": "95",
+            "Line1": "Russ Sonnenschein",
+            "Line2": "Sonnenschein Family Store",
+            "Line3": "5647 Cypress Hill Ave.",
+            "Line4": "Middlefield, CA  94303",
+            "Lat": "37.4238562",
+            "Long": "-122.1141681"
+        },
+        "ShipAddr": {
+            "Id": "25",
+            "Line1": "5647 Cypress Hill Ave.",
+            "City": "Middlefield",
+            "CountrySubDivisionCode": "CA",
+            "PostalCode": "94303",
+            "Lat": "37.4238562",
+            "Long": "-122.1141681"
+        },
+        "SalesTermRef": {
+            "value": "3"
+        },
+        "DueDate": "2014-10-19",
+        "TotalAmt": 362.07,
+        "ApplyTaxAfterDiscount": false,
+        "PrintStatus": "NeedToPrint",
+        "EmailStatus": "NotSet",
+        "BillEmail": {
+            "Address": "Familiystore@intuit.com"
+        },
+        "Balance": 362.07
+    },
+    "time": "2015-07-24T10:48:27.082-07:00"
+}

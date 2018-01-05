@@ -1,0 +1,28 @@
+{
+  "id": 120560818172775265,
+  "order_id": 820982911946154508,
+  "amount": "11.50",
+  "kind": "authorization",
+  "gateway": "visa",
+  "status": "success",
+  "message": null,
+  "created_at": "2017-09-22T14:07:04-04:00",
+  "test": false,
+  "authorization": "1001",
+  "currency": null,
+  "location_id": null,
+  "user_id": null,
+  "parent_id": null,
+  "device_id": null,
+  "receipt": {
+  },
+  "error_code": null,
+  "source_name": "web",
+  "payment_details": {
+    "credit_card_bin": null,
+    "avs_result_code": null,
+    "cvv_result_code": null,
+    "credit_card_number": "•••• •••• •••• 1234",
+    "credit_card_company": "Visa"
+  }
+}

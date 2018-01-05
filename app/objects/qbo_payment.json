@@ -1,0 +1,87 @@
+// A Payment object records a payment in QuickBooks. The payment can be applied for a particular customer against multiple Invoices and Credit Memos. It can also be created without any Invoice or Credit Memo, by just specifying an amount.
+
+// A Payment can be updated as a full update or a sparse update.
+// A Payment can be linked to multiple Invoices and Credit Memos.
+// A Payment can be created as unapplied to any Invoice or Credit Memo, in which case it is recorded as a credit.
+// If any element in any line needs to be updated, all the Line elements of the Payment object have to be provided. This is true for full or sparse update. Lines can be updated only ALL or NONE.
+// To remove all lines, send an empty Line element.
+// To remove some of the lines, send all the Lines that need to be present MINUS the lines that need to be removed.
+// To add some lines, send all existing and new Lines that need to be present.
+// The sequence in which the lines are received is the sequence in which lines are preserved.
+// If you have a large number of invoice and corresponding payment records that you wish to import to the QuickBooks Online company, sort the invoice and payment records in chronological order and use the batch resource to send invoice and payments batches of 25, one after the other, to ensure any open invoices get credited with their payments.
+
+{
+  "Payment": {
+    "CustomerRef": {
+      "value": "20",
+      "name": "Red Rock Diner"
+    },
+    "DepositToAccountRef": {
+      "value": "4"
+    },
+    "TotalAmt": 65.0,
+    "UnappliedAmt": 10.0,
+    "ProcessPayment": false,
+    "domain": "QBO",
+    "sparse": false,
+    "Id": "163",
+    "SyncToken": "0",
+    "MetaData": {
+      "CreateTime": "2015-01-16T15:08:12-08:00",
+      "LastUpdatedTime": "2015-01-16T15:08:12-08:00"
+    },
+    "TxnDate": "2015-01-16",
+    "Line": [
+      {
+        "Amount": 55.0,
+        "LinkedTxn": [
+          {
+            "TxnId": "70",
+            "TxnType": "Invoice"
+          }
+        ],
+        "LineEx": {
+          "any": [
+            {
+              "name": "{http://schema.intuit.com/finance/v3}NameValue",
+              "declaredType": "com.intuit.schema.finance.v3.NameValue",
+              "scope": "javax.xml.bind.JAXBElement$GlobalScope",
+              "value": {
+                "Name": "txnId",
+                "Value": "70"
+              },
+              "nil": false,
+              "globalScope": true,
+              "typeSubstituted": false
+            },
+            {
+              "name": "{http://schema.intuit.com/finance/v3}NameValue",
+              "declaredType": "com.intuit.schema.finance.v3.NameValue",
+              "scope": "javax.xml.bind.JAXBElement$GlobalScope",
+              "value": {
+                "Name": "txnOpenBalance",
+                "Value": "71.00"
+              },
+              "nil": false,
+              "globalScope": true,
+              "typeSubstituted": false
+            },
+            {
+              "name": "{http://schema.intuit.com/finance/v3}NameValue",
+              "declaredType": "com.intuit.schema.finance.v3.NameValue",
+              "scope": "javax.xml.bind.JAXBElement$GlobalScope",
+              "value": {
+                "Name": "txnReferenceNumber",
+                "Value": "1024"
+              },
+              "nil": false,
+              "globalScope": true,
+              "typeSubstituted": false
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "time": "2015-07-28T15:16:15.435-07:00"
+}
