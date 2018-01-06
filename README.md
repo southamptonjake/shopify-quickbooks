@@ -4,7 +4,7 @@ I've always been really frustrated for not being able to control my Accounts Rec
 Apps are either expensive (~USD 30/month) or don't work correctly.
 This is an effort to integrate Shopify and Quickbooks, starting with the basics: an order created in Shopify creates a Invoice/Receipt in Quickbooks.
 
-The mid-level logic is:
+# Logic:
 
 **1. Order is created on Shopify**
 
@@ -24,21 +24,18 @@ If the does, get's the customer ID (important to be able to create the invoice/r
 
 
 **3. Creates a customer**
-
 The function `qbo_create_customer()` get's each relevant field from the order and parses it into the specific QBO fields.
 It then dumps the object to QBO API, and for the next step, checks whether the order has been paid or not.
 If it has, creates a `Receipt`, if it hasn't, creates an `Invoice`.
 
 
 **4a. Creates an Invoice**
-
 Folder /objects/qbo_invoice.json contains an example of the structure of the invoice object.
 Creates an invoice and dumps it into the QBO API. An invoice has to have a Customer ID (CustomerRef for the Invoice Object),
 so it grabs the id of the cliente via the `qbo_check_customer`.
 
 
 **4b. Creates an Receipt**
-
 Folder /objects/qbo_receipt.json contains an example of the structure of the receipt object.
 Similar logic as the invoice function.
 
@@ -46,3 +43,10 @@ Similar logic as the invoice function.
 **This is, and always will be an open source project.**
 **The objective is to make it run smoothly and to publish it for free in the AppStore of both applications**
 
+________________
+
+Sample file for Django OAuth2 App from Quickbooks:
+https://github.com/IntuitDeveloper/OAuth2PythonSampleApp
+
+Sample file for Django CRUD Invoice operations:
+https://github.com/IntuitDeveloper/PythonV3InvoiceSampleApp/blob/master/SampleInvoiceCRUD/invoice_crud.py
