@@ -15,11 +15,11 @@ def index():
 
 ################################################################################### SHOPIFY ORDER WEBHOOK
 
-@app.route("/shopifyorder")
+@app.route("/shopifyorder",methods = ['POST','GET'])
 def get_new_order():
     # this will have the order
-    #payload = request.get_data()
-    payload = json.load(open('app/objects/shop_order_webhook.json'))
+    payload = request.json
+    #payload = json.load(open('app/objects/shop_order_webhook.json'))
 
     so = models.ShopOrder(payload['id'],payload['total_price'],payload['subtotal_price'],payload['financial_status'],payload['total_discounts'],
     payload['user_id'],payload['location_id'],payload['line_items'])
@@ -34,7 +34,8 @@ def get_new_order():
         oi = models.ShopOrderItems(item['id'],item['title'],item['quantity'],item['price'],item['sku'],item['product_id'], item['total_discount'])
         ois.append(oi)
 
-    quickbooks_cust_id = qbo_check_customer(ShopCustomer)
+    print(sc.email)
+    quickbooks_cust_id = qbo_check_customer(sc)
 
 
 ################################################################################### CHECK QUICKBOOKS CUSTOMER
