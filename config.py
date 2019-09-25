@@ -12,15 +12,15 @@ SECRET_KEY = 'admin'
 # Quickbooks configurations information
 
 qbo = {
-		'QBO_CLIENT_ID' 		: ""
-		'QBO_CLIENT_SECRET' 	: ""
+		'QBO_CLIENT_ID': "",
+		'QBO_CLIENT_SECRET': ""
 		}
 
 
 
 # Shopify configurations information
 shop = { 
-		'SHOP_API_KEY' 		 : ""
-		'SHOP_PASSWORD'		 : ""
-		'SHOP_SHARED_SECRET' : ""
+		'SHOP_API_KEY': "",
+		'SHOP_PASSWORD': "",
+		'SHOP_SHARED_SECRET': ""
 		}

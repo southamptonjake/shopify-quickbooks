@@ -1,96 +1,77 @@
 from app import app
 from flask import Flask, render_template, request, redirect, url_for
-import mysql.connector as mariadb
 import json, jsonify, collections, itertools, csv
 import requests
 import config as cfg
-import models
+from . import models
 
 
+
+
+
+@app.route("/")
+def index():
+    return render_template('index.html')
 
 ################################################################################### SHOPIFY ORDER WEBHOOK
 
+@app.route("/shopifyorder")
 def get_new_order():
-
     # this will have the order
-    # payload = request.get_data()
-    payload = json.load(open('objects/shop_order_webhook.json'))
-    
-    ShopOrder.id                = payload['id']
-    ShopOrder.date              = payload['created_at']
-    ShopOrder.total_price       = payload['total_price']
-    ShopOrder.subtotal_price    = payload['subtotal_price']
-    ShopOrder.financial_status  = payload['financial_status']
-    ShopOrder.total_discounts   = payload['total_discounts']
-    ShopOrder.user_id           = payload['user_id']
-    ShopOrder.location_id       = payload['location_id']
-    ShopOrder.line_items        = payload['line_items']
+    #payload = request.get_data()
+    payload = json.load(open('app/objects/shop_order_webhook.json'))
 
-    ShopCustomer.id             = payload['customer']['id']
-    ShopCustomer.email          = payload['customer']['email']
-    ShopCustomer.first_name     = payload['customer']['first_name'] 
-    ShopCustomer.last_name      = payload['customer']['last_name']
-    ShopCustomer.address1       = payload['customer']['default_address']['address1']
-    ShopCustomer.address2       = payload['customer']['default_address']['address2']
-    ShopCustomer.city           = payload['customer']['default_address']['city']
-    ShopCustomer.province       = payload['customer']['default_address']['province']
-    ShopCustomer.phone          = payload['customer']['default_address']['phone']
+    so = models.ShopOrder(payload['id'],payload['total_price'],payload['subtotal_price'],payload['financial_status'],payload['total_discounts'],
+    payload['user_id'],payload['location_id'],payload['line_items'])
 
-    for items in payload['line_items']:
+    sc = models.ShopCustomer(payload['customer']['id'],payload['customer']['email'],payload['customer']['first_name'],payload['customer']['last_name'],
+    payload['customer']['default_address']['address1'],payload['customer']['default_address']['address2'],payload['customer']['default_address']['city'],
+    payload['customer']['default_address']['province'],payload['customer']['default_address']['phone'])
 
-        OrderItems.id               = item['id']
-        OrderItems.title            = item['title']
-        OrderItems.quantity         = item['quantity']
-        OrderItems.price            = item['price']
-        OrderItems.sku              = item['sku']
-        OrderItems.product_id       = item['product_id']
-        OrderItems.total_discount   = item['total_discount']
+    ois = []
 
-    return check_customer()
+    for item in payload['line_items']:
+        oi = models.ShopOrderItems(item['id'],item['title'],item['quantity'],item['price'],item['sku'],item['product_id'], item['total_discount'])
+        ois.append(oi)
+
+    quickbooks_cust_id = qbo_check_customer(ShopCustomer)
 
 
 ################################################################################### CHECK QUICKBOOKS CUSTOMER
 
-def qbo_check_customer():
+def qbo_check_customer(ShopCustomer):
+    realm_id        = cfg.qbo['realmID']
+    params1         = (ShopCustomer.first_name, ShopCustomer.last_name)
+    query_statement = "SELECT * FROM Customer WHERE GivenName=%s AND FamilyName=%s" % (params1)
+    params2         = (realm_id, query_statement)
+    base_uri        = "https://quickbooks.api.intuit.com/v3/company/%s/query?query=%s" % (params2)
 
-    if not payload['customer']['first_name']:
-        
-        return qbo_create_fake_customer()
-    
-    else
+    qbo_query_id    = requests.get(base_uri)
+    qbo_query_id    = qbo_query.json()
 
-        realm_id        = cfg.qbo['realmID']
-        params1         = (ShopCustomer.first_name, ShopCustomer.last_name)
-        query_statement = "SELECT * FROM Customer WHERE GivenName=%s AND FamilyName=%s" % (params1)
-        params2         = (realm_id, query_statement)
-        base_uri        = "https://quickbooks.api.intuit.com/v3/company/%s/query?query=%s" % (params2)
+    if not qbo_query_id['QueryResponse']:
+        return qbo_create_customer()
 
-        qbo_query_id    = requests.get(base_uri)
-        qbo_query_id    = qbo_query.json()
+    else:
+        return qbo_query_id['QueryResponse']['Customer']['Id']
 
-        if not qbo_query_id['QueryResponse']:
-            return qbo_create_customer()
-        
-        else:
-            return customer_id = qbo_query_id['QueryResponse']['Customer']['Id']:
-
-
+'''
 ################################################################################### CREATE QUICKBOOKS CUSTOMER
 
 
 def qbo_create_customer():
 
     QboCustomer.first_name  = ShopCustomer.first_name
-    QboCustomer.last_name   = ShopCustomer.last_name 
+    QboCustomer.last_name   = ShopCustomer.last_name
     QboCustomer.email       = ShopCustomer.email
     QboCustomer.line1       = QboCustomer.first_name
-    QboCustomer.line2       = ShopCustomer.address1 
+    QboCustomer.line2       = ShopCustomer.address1
     QboCustomer.line3       = ShopCustomer.address2
-    QboCustomer.city        = ShopCustomer.city 
-    QboCustomer.province    = ShopCustomer.province 
+    QboCustomer.city        = ShopCustomer.city
+    QboCustomer.province    = ShopCustomer.province
 
     customer_body = {}
-    
+
     customer_body['GivenName']                          = QboCustomer.first_name
     customer_body['FamilyName']                         = QboCustomer.last_name
     customer_body['PrimaryEmailAddr']['Address']        = QboCustomer.email
@@ -101,21 +82,22 @@ def qbo_create_customer():
     customer_body['BillAddr']['CountrySubDivisionCode'] = QboCustomer.province
 
     try:
-        base_url        = configRead.get_api_url() + req_context.realm_id 
+        base_url        = configRead.get_api_url() + req_context.realm_id
         url             = base_url + '/customer' + configRead.get_minorversion(4)
         request_data    = {'payload': invoice_body, 'url': url}
         response_data   = requestMethods.request(request_data, req_context, method='POST')
         handle_response = handle_response(response_data)
+    # this will have the ord
         print "Customer created successfully."
 
     except:
         print "Error creating customer"
 
 
-    if ShopOrder.financial_status == "paid"
+    if ShopOrder.financial_status == "paid":
         return qbo_create_receipt()
     else:
-        return qbo_create_invoice() 
+        return qbo_create_invoice()
 
 
 ################################################################################### CREATE QUICKBOOKS INVOICE
@@ -130,9 +112,9 @@ def qbo_create_invoice():
     for items in ShopOrder.lineitems:
         invoice_body['Invoice']['Line'][items]
 
-    
+
     try:
-        base_url        = configRead.get_api_url() + req_context.realm_id 
+        base_url        = configRead.get_api_url() + req_context.realm_id
         url             = base_url + '/customer' + configRead.get_minorversion(4)
         request_data    = {'payload': invoice_body, 'url': url}
         response_data   = requestMethods.request(request_data, req_context, method='POST')
@@ -160,9 +142,9 @@ def qbo_create_receipt():
     receipt_body['GivenName'] = QboReceipt.province
     receipt_body['GivenName'] = QboReceipt.postalcode
 
-    
+
     try:
-        base_url        = configRead.get_api_url() + req_context.realm_id 
+        base_url        = configRead.get_api_url() + req_context.realm_id
         url             = base_url + '/customer' + configRead.get_minorversion(4)
         request_data    = {'payload': invoice_body, 'url': url}
         response_data   = requestMethods.request(request_data, req_context, method='POST')
@@ -190,11 +172,11 @@ def handle_response(response_data):
         new_reponse['message'] = "Success! Customer added to QBO"
         # More data from successful response can be retrieved like customer id
     return new_reponse
-
+'''
 
 ################################################################################### GARBAGE
 
-def tests():
+#def tests():
     # # QBO_BASE    = "sandbox-quickbooks.api.intuit.com"
     # # COMP_ID     = '123145895094094'
     # # ENT_ID      = ''
@@ -208,4 +190,3 @@ def tests():
     # QBO_BASE = "https://sandbox-quickbooks.api.intuit.com"
     # qbo_select = "SELECT * FROM Customer WHERE GivenName = 'Bill'"
     # URL = "/v3/company/<realmID>/query?query=%s" % (qbo_select)
-
