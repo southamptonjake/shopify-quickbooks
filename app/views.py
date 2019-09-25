@@ -11,12 +11,14 @@ from . import models
 
 @app.route("/")
 def index():
+    print(cfg.qbo)
     return render_template('index.html')
 
 ################################################################################### SHOPIFY ORDER WEBHOOK
 
 @app.route("/shopifyorder",methods = ['POST','GET'])
 def get_new_order():
+
     # this will have the order
     payload = request.json
     #payload = json.load(open('app/objects/shop_order_webhook.json'))
