@@ -3,8 +3,7 @@
 ################################################################################### SHOPIFY OBJECTS
 #Shopify Order object
 class ShopOrder:
-    def __init__(self, id, total_price, subtotal_price, financial_status, total_discounts, user_id, location_id, line_items):
-        self.id = id
+    def __init__(self, total_price, subtotal_price, financial_status, total_discounts, user_id, location_id, line_items):
         self.total_price = total_price
         self.subtotal_price = subtotal_price
         self.financial_status = financial_status
@@ -16,22 +15,23 @@ class ShopOrder:
 
 #Shopify Customer object
 class ShopCustomer:
-    def __init__(self,id,email,first_name,last_name,address1,address2,city,province,phone):
-        self.id = id
+    def __init__(self,email,first_name,last_name,phone,company,address1,address2,city,post_code,):
         self.email = email
         self.first_name = first_name
         self.last_name = last_name
+        self.phone = phone
+        self.company = company
+
         self.address1 = address1
         self.address2 = address2
         self.city = city
-        self.province = province
-        self.phone = phone
+        self.post_code = post_code
+
 
 
 #Shopify Items in Order object
 class ShopOrderItems:
-    def __init__(self, id, title, quantity, price, sku, product_id, total_discount):
-        self.id = id
+    def __init__(self, title, quantity, price, sku, product_id, total_discount):
         self.title = title
         self.quantity = quantity
         self.price = price
