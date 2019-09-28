@@ -1,4 +1,6 @@
 config.py
+realm.id
+refresh.token
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

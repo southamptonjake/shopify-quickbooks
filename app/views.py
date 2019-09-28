@@ -9,7 +9,9 @@ from intuitlib.enums import Scopes
 import re
 from quickbooks import QuickBooks
 from quickbooks.objects.customer import Customer
-from quickbooks.objects.base import Address
+from quickbooks.objects.base import Address,EmailAddress,PhoneNumber
+import pickle
+
 
 @app.route("/")
 def index():
@@ -24,8 +26,8 @@ def index():
 def get_new_order():
 
     # this will have the order
-    #payload = request.json
-    payload = json.load(open('app/objects/shop_order_webhook.json'))
+    payload = request.json
+    #payload = json.load(open('app/objects/shop_order_webhook.json'))
 
     so = models.ShopOrder(payload['total_price'],payload['subtotal_price'],payload['financial_status'],payload['total_discounts'],
     payload['user_id'],payload['location_id'],payload['line_items'])
@@ -55,15 +57,8 @@ def qbo_check_customer(sc):
     else:
         return customers[0].Id
 
-    #if not qbo_query_id['QueryResponse']:
-    #
-
-    #else:
-    #    return qbo_query_id['QueryResponse']['Customer']['Id']
-
 
 ################################################################################### CREATE QUICKBOOKS CUSTOMER
-
 
 def qbo_create_customer(sc):
     client = create_qbc()
@@ -71,16 +66,21 @@ def qbo_create_customer(sc):
     customer = Customer()
     customer.GivenName = sc.first_name
     customer.FamilyName = sc.last_name
-    customer.primary_phone = sc.phone
-    customer.PrimaryEmailAddr = sc.email
     customer.CompanyName = sc.company
+
+    phone = PhoneNumber()
+    phone.FreeFormNumber = sc.phone
+    customer.PrimaryPhone = phone
+
+    email = EmailAddress()
+    email.Address = sc.email
+    customer.PrimaryEmailAddr = email
 
     address = Address()
     address.Line1 = sc.address1
     address.Line2 = sc.address2
     address.City = sc.city
     address.PostalCode = sc.post_code
-
     customer.BillAddr = address
 
     customer.save(qb=client)
@@ -162,6 +162,10 @@ def handle_response(response_data):
 '''
 
 def create_qbc():
+
+
+    refresh_token = pickle.load( open( "refresh.token", "rb" ) )
+    realm_id = pickle.load( open( "realm.id", "rb" ) )
     auth_client = AuthClient(
     cfg.qbo['QBO_CLIENT_ID'],
     cfg.qbo['QBO_CLIENT_SECRET'],
@@ -170,25 +174,22 @@ def create_qbc():
     )
     client = QuickBooks(
         auth_client=auth_client,
-        refresh_token=session['refresh_token'],
-        company_id=session["realm_id"],
+        refresh_token=refresh_token,
+        company_id=realm_id,
     )
     return client
 
 @app.route("/redirect")
 def redirect():
-
-    session["auth_code"] = request.args.get('code')
-    session["realm_id"] =  request.args.get('realmId')
     auth_client = AuthClient(
     cfg.qbo['QBO_CLIENT_ID'],
     cfg.qbo['QBO_CLIENT_SECRET'],
     "https://tdasu.pagekite.me/redirect",
     environment="production"
     )
-    auth_client.get_bearer_token(session["auth_code"], realm_id=session["realm_id"])
-    session['access_token'] = auth_client.access_token
-    session['refresh_token'] = auth_client.refresh_token
+    auth_client.get_bearer_token(request.args.get('code'), realm_id=request.args.get('realmId'))
+    pickle.dump(auth_client.refresh_token, open( "refresh.token", "wb" ) )
+    pickle.dump(request.args.get('realmId'), open( "realm.id", "wb" ) )
     return "set up"
 
 @app.route("/startup")
