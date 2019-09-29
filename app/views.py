@@ -11,7 +11,7 @@ from quickbooks import QuickBooks
 from quickbooks.objects.customer import Customer
 from quickbooks.objects.base import Address,EmailAddress,PhoneNumber
 import pickle
-
+from quickbooks.objects import Invoice,SalesItemLineDetail,SalesItemLine
 
 @app.route("/")
 def index():
@@ -26,8 +26,8 @@ def index():
 def get_new_order():
 
     # this will have the order
-    payload = request.json
-    #payload = json.load(open('app/objects/shop_order_webhook.json'))
+    #payload = request.json
+    payload = json.load(open('app/objects/shop_order_webhook.json'))
 
     so = models.ShopOrder(payload['total_price'],payload['subtotal_price'],payload['financial_status'],payload['total_discounts'],
     payload['user_id'],payload['location_id'],payload['line_items'])
@@ -45,6 +45,7 @@ def get_new_order():
     print(sc.email)
     quickbooks_cust_id = qbo_check_customer(sc)
     print(quickbooks_cust_id)
+    qbo_create_invoice(so,quickbooks_cust_id)
     return "abc"
 
 ################################################################################### CHECK QUICKBOOKS CUSTOMER
@@ -86,80 +87,32 @@ def qbo_create_customer(sc):
     customer.save(qb=client)
     return customer.Id
 
-'''
+
 ################################################################################### CREATE QUICKBOOKS INVOICE
 
-def qbo_create_invoice():
+def qbo_create_invoice(so, customer_id):
 
-    invoice_body = {}
+    client = create_qbc()
+    customer_ref = Customer.get(customer_id, qb=client).to_ref()
+    print(customer_ref)
+    line_detail = SalesItemLineDetail()
+    line_detail.UnitPrice = 100  # in dollars
+    line_detail.Qty = 1  # quantity can be decimal
 
-    invoice_body['Invoice']['TxnDate'] = ShopOrder.date
-    invoice_body['Invoice']['CustomerRef']['value'] = qbo_check_customer()
+    line = SalesItemLine()
+    line.Amount = 100  # in dollars
+    line.SalesItemLineDetail = line_detail
 
-    for items in ShopOrder.lineitems:
-        invoice_body['Invoice']['Line'][items]
-
-
-    try:
-        base_url        = configRead.get_api_url() + req_context.realm_id
-        url             = base_url + '/customer' + configRead.get_minorversion(4)
-        request_data    = {'payload': invoice_body, 'url': url}
-        response_data   = requestMethods.request(request_data, req_context, method='POST')
-        handle_response = handle_response(response_data)
-        print "Invoice created successfully."
-
-    except:
-        print "Error creating invoice."
+    item_ref = Ref()
+    item_ref = so.
 
 
-################################################################################### CREATE QUICKBOOKS RECEIPT
+    invoice = Invoice()
+    invoice.CustomerRef = customer_ref
+    invoice.Line = [line]
 
-def qbo_create_receipt():
+    invoice.save(qb=client)
 
-    receipt_body = {}
-
-    receipt_body['GivenName'] = QboReceipt.first_name
-    receipt_body['GivenName'] = QboReceipt.last_name
-    receipt_body['GivenName'] = QboReceipt.email
-    receipt_body['GivenName'] = QboReceipt.line1
-    receipt_body['GivenName'] = QboReceipt.line2
-    receipt_body['GivenName'] = QboReceipt.line3
-    receipt_body['GivenName'] = QboReceipt.city
-    receipt_body['GivenName'] = QboReceipt.country
-    receipt_body['GivenName'] = QboReceipt.province
-    receipt_body['GivenName'] = QboReceipt.postalcode
-
-
-    try:
-        base_url        = configRead.get_api_url() + req_context.realm_id
-        url             = base_url + '/customer' + configRead.get_minorversion(4)
-        request_data    = {'payload': invoice_body, 'url': url}
-        response_data   = requestMethods.request(request_data, req_context, method='POST')
-        handle_response = handle_response(response_data)
-        print "Receipt created successfully."
-
-    except:
-        print "Error creating receipt."
-
-
-################################################################################### HANDLE QUICKBOOKS RESPONSE
-
-def handle_response(response_data):
-    new_reponse = {}
-    new_reponse['status_code'] = response_data['status_code']
-    content = json.loads(response_data['content'])
-    if response_data['status_code'] != 200:
-        new_reponse['font_color'] = 'red'
-        try:
-            new_reponse['message'] = content['Fault']['Error'][0]['Message']
-        except:
-            new_reponse['message'] = "Some error occurred. Error message not found."
-    else:
-        new_reponse['font_color'] = 'green'
-        new_reponse['message'] = "Success! Customer added to QBO"
-        # More data from successful response can be retrieved like customer id
-    return new_reponse
-'''
 
 def create_qbc():
 
@@ -213,20 +166,3 @@ def start_up():
     print(auth_url)
     result = "<a href=\"" + auth_url + "\">" + auth_url + "</a"
     return result
-
-################################################################################### GARBAGE
-
-#def tests():
-    # # QBO_BASE    = "sandbox-quickbooks.api.intuit.com"
-    # # COMP_ID     = '123145895094094'
-    # # ENT_ID      = ''
-    # # QBO         = '/company/%s/customer/%s' % (COMP_ID, ENT_ID)
-    # # FINAL_URL   = QBO_BASE + QBO
-    # # qbo_customers = requests.get(FINAL_URL)
-    # qbo_customers = json.loads(qbo)
-
-    # customer_first_name = qbo_customers['Customer']['GivenName']
-
-    # QBO_BASE = "https://sandbox-quickbooks.api.intuit.com"
-    # qbo_select = "SELECT * FROM Customer WHERE GivenName = 'Bill'"
-    # URL = "/v3/company/<realmID>/query?query=%s" % (qbo_select)

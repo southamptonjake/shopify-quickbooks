@@ -57,33 +57,3 @@ class QboCustomer:
         self.country        = country
         self.province       = estate
         self.postalcode     = postalcode
-
-
-
-# Invoice object
-class QBOSalesInvoice:
-    def __init__(self, f_name, l_name, m_name, phone, email):
-        self.given_name = f_name
-        self.middle_name = m_name
-        self.family_name = l_name
-        self.primary_phone = phone
-        self.primary_email_addr = email
-
-
-# Receipt object
-class QBOSalesReceipt:
-    def __init__(self, f_name, l_name, m_name, phone, email):
-        self.given_name = f_name
-        self.middle_name = m_name
-        self.family_name = l_name
-        self.primary_phone = phone
-        self.primary_email_addr = email
-
-# Payment (received) object
-class QBOPayment:
-    def __init__(self, f_name, l_name, m_name, phone, email):
-        self.given_name = f_name
-        self.middle_name = m_name
-        self.family_name = l_name
-        self.primary_phone = phone
-        self.primary_email_addr = email
