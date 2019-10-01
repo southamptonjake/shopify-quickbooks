@@ -9,16 +9,23 @@ from intuitlib.enums import Scopes
 import re
 from quickbooks import QuickBooks
 from quickbooks.objects.customer import Customer
-from quickbooks.objects.base import Address,EmailAddress,PhoneNumber
+from quickbooks.objects.item import Item
+from quickbooks.objects.account import Account
+
+from quickbooks.objects.base import Address,EmailAddress,PhoneNumber,Ref
 import pickle
 from quickbooks.objects import Invoice,SalesItemLineDetail,SalesItemLine
 
 @app.route("/")
 def index():
     client = create_qbc()
-    customers = Customer.all(qb=client)
-    print(customers[30])
-    return "1"
+    item = Item()
+    item.Name = "test"
+    item.UnitPrice = 100
+    item.Type = "Service"
+
+    item.save(qb=client)
+    return item.Id
 
 ################################################################################### SHOPIFY ORDER WEBHOOK
 
@@ -29,8 +36,7 @@ def get_new_order():
     #payload = request.json
     payload = json.load(open('app/objects/shop_order_webhook.json'))
 
-    so = models.ShopOrder(payload['total_price'],payload['subtotal_price'],payload['financial_status'],payload['total_discounts'],
-    payload['user_id'],payload['location_id'],payload['line_items'])
+
 
     cust_hold = payload['customer']
     address_hold = cust_hold['default_address']
@@ -39,16 +45,31 @@ def get_new_order():
     ois = []
 
     for item in payload['line_items']:
-        oi = models.ShopOrderItems(item['title'],item['quantity'],item['price'],item['sku'],item['product_id'], item['total_discount'])
+        oi = models.ShopOrderItem(item['title'],item['quantity'],item['price'],item['sku'])
         ois.append(oi)
+
+
 
     print(sc.email)
     quickbooks_cust_id = qbo_check_customer(sc)
     print(quickbooks_cust_id)
+
+    for item in ois:
+        item.quickbooks_id = qbo_check_item(item)
+        print(item.quickbooks_id)
+
+    so = models.ShopOrder(payload['total_price'],ois)
+
     qbo_create_invoice(so,quickbooks_cust_id)
     return "abc"
 
 ################################################################################### CHECK QUICKBOOKS CUSTOMER
+
+def qbo_find_sales_account():
+    client = create_qbc()
+    account = Customer.filter(Active=True, Name="Sales", qb=client)
+    return account[0].Id
+
 
 def qbo_check_customer(sc):
     client = create_qbc()
@@ -57,6 +78,19 @@ def qbo_check_customer(sc):
         return qbo_create_customer(sc)
     else:
         return customers[0].Id
+
+def qbo_check_item(soi):
+    client = create_qbc()
+    items = Item.filter(Active=True, Sku=soi.sku, qb=client)
+    if(len(items) == 0):
+        items = Item.filter(Active=True, Name=soi.title, qb=client)
+        if(len(items) == 0):
+            return qbo_create_item(soi)
+        else:
+            return items[0].Id
+    else:
+        return items[0].Id
+
 
 
 ################################################################################### CREATE QUICKBOOKS CUSTOMER
@@ -87,25 +121,47 @@ def qbo_create_customer(sc):
     customer.save(qb=client)
     return customer.Id
 
+################################################################################### CREATE QUICKBOOKS Item
+
+def qbo_create_item(soi):
+    client = create_qbc()
+    item = Item()
+
+    print(soi.title)
+    print(soi.price)
+
+    item.Name = soi.title
+    item.UnitPrice = soi.price
+    item.Type = "Service"
+    item.Sku = soi.sku
+
+    account = Account.filter(Active=True, Name="Sales", qb=client)
+    account_ref = Account.get(account[0].Id, qb=client).to_ref()
+
+    item.IncomeAccountRef = account_ref
+    item.save(qb=client)
+    return item.Id
+
 
 ################################################################################### CREATE QUICKBOOKS INVOICE
 
 def qbo_create_invoice(so, customer_id):
 
     client = create_qbc()
+
     customer_ref = Customer.get(customer_id, qb=client).to_ref()
-    print(customer_ref)
+
     line_detail = SalesItemLineDetail()
     line_detail.UnitPrice = 100  # in dollars
     line_detail.Qty = 1  # quantity can be decimal
 
+    item_ref = Item.get(35, qb=client).to_ref()
+    line_detail.ItemRef = item_ref
+
     line = SalesItemLine()
     line.Amount = 100  # in dollars
     line.SalesItemLineDetail = line_detail
-
-    item_ref = Ref()
-    item_ref = so.
-
+    line.DetailType = "SalesItemLineDetail"
 
     invoice = Invoice()
     invoice.CustomerRef = customer_ref
