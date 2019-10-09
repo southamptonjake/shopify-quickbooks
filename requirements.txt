@@ -1,0 +1,4 @@
+Flask==1.1.1
+jsonify==0.5
+oauthlib==3.1.0
+python-quickbooks==0.8.1
